@@ -1,6 +1,6 @@
 export type Category = 'Auto';
 
-export interface Product { id:string; sku:string; stripeProductId:string; stripePriceId:string; stripeLink:string; name:string; category:Category; price:number; originalPrice?:number; badge?:'NEU'|'BESTSELLER'|'LIMITED'; descriptionDe:string; descriptionEn:string; longDescriptionDe:string; longDescriptionEn:string; images:string[]; variants:{label:string;labelEn:string;options:string[];optionsEn:string}[]; inStock:boolean; rating:number; reviewCount:number; shippingInfo:string; shippingInfoEn:string; relatedIds:string[]; }
+export interface Product { id:string; sku:string; stripeProductId:string; stripePriceId:string; stripeLink:string; name:string; category:Category; price:number; originalPrice?:number; badge?:'NEU'|'BESTSELLER'|'LIMITED'; descriptionDe:string; descriptionEn:string; longDescriptionDe:string; longDescriptionEn:string; images:string[]; variants:{label:string;labelEn:string;options:string[];optionsEn:string[]}[]; inStock:boolean; rating:number; reviewCount:number; shippingInfo:string; shippingInfoEn:string; relatedIds:string[]; }
 export interface CartItem { productId:string; sku:string; name:string; price:number; image:string; quantity:number; size:string; finish:string; }
 const B='https://zgnpmogdjnnhpwewavnr.supabase.co/storage/v1/object/public/project-images/c2b25bd0-e754-4efd-a4b8-2e05c0f10358/';
 const STRIPE_LINK='https://buy.stripe.com/dRm5kE8DY6IN1aBgjCaR200';

@@ -36,6 +36,7 @@ export default function ProductDetail() {
   const add = () => {
     addItem({
       productId: product.id,
+      sku: product.sku,
       name: product.name,
       price: product.price,
       image: product.images[0],
