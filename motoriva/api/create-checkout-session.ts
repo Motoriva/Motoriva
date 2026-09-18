@@ -9,11 +9,19 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 const SHIPPING_CH = 18.9;
 const SHIPPING_INT = 67.0;
-const SWISS_NAMES = ['schweiz', 'switzerland', 'suisse', 'svizzera', 'ch'];
 
 interface CartLine {
   productId: string;
   quantity: number;
+}
+
+interface ShippingAddress {
+  firstName?: string;
+  lastName?: string;
+  street?: string;
+  zip?: string;
+  city?: string;
+  country?: string;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -23,10 +31,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { items, email, country, origin } = req.body as {
+    const { items, email, country, shipping, origin } = req.body as {
       items: CartLine[];
       email?: string;
       country?: string;
+      shipping?: ShippingAddress;
       origin?: string;
     };
 
@@ -61,16 +70,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Same rule the frontend uses to show the shipping estimate - computed
-    // here again server-side so it can't be tampered with either.
-    const isSwiss = SWISS_NAMES.includes((country || '').trim().toLowerCase());
+    // here again server-side so it can't be tampered with either. Country
+    // is now a proper ISO code (CH, DE, ...), not free-typed text.
+    const isSwiss = (country || '').toUpperCase() === 'CH';
     const shippingAmount = isSwiss ? SHIPPING_CH : SHIPPING_INT;
 
     const siteOrigin = origin || `https://${req.headers.host}`;
+
+    // Attaching the shipping address here makes it show up directly on the
+    // payment in your Stripe Dashboard (Payments -> click the payment ->
+    // "Shipping" section) - no separate database needed to find out where
+    // to send an order.
+    const shippingName = [shipping?.firstName, shipping?.lastName].filter(Boolean).join(' ').trim();
+    const paymentIntentData: Stripe.Checkout.SessionCreateParams.PaymentIntentData | undefined =
+      shipping && shipping.street && shipping.city && shipping.country
+        ? {
+            shipping: {
+              name: shippingName || (email as string) || 'Kunde',
+              address: {
+                line1: shipping.street,
+                postal_code: shipping.zip,
+                city: shipping.city,
+                country: shipping.country.toUpperCase(),
+              },
+            },
+          }
+        : undefined;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items,
       customer_email: email || undefined,
+      payment_intent_data: paymentIntentData,
       shipping_options: [
         {
           shipping_rate_data: {
