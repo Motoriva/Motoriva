@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import Stripe from 'stripe';
-import { products } from '../src/data/products';
+import { products } from '../src/data/products.js';
 
 // STRIPE_SECRET_KEY must be set as an environment variable in your Vercel
 // project settings (Project -> Settings -> Environment Variables).
